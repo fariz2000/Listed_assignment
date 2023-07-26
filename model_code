@@ -44,3 +44,116 @@ def showVideo(path):
   """ % data_url)
 
 from IPython.display import clear_output
+
+# input video files
+#@title Upload video
+#video
+
+#importing necessary modules and libraries
+import os
+import shutil
+from google.colab import drive
+from google.colab import files
+from IPython.display import HTML, clear_output
+from base64 import b64encode
+import moviepy.editor as mp
+
+#upload
+upload_method = "Upload" #@param ["Upload","Custom Path"]
+
+if os.path.isfile('/content/sample_data/input_vid.mp4'):
+    os.remove('/content/sample_data/input_vid.mp4')
+
+# if file is uploaded
+if upload_method == "Upload":
+    uploaded = files.upload()
+    for filename in uploaded.keys():
+        os.rename(filename, '/content/sample_data/input_vid.mp4')
+    PATH_TO_YOUR_VIDEO = '/content/sample_data/input_vid.mp4'
+
+# if file is uploaded into the colab and use its path
+elif upload_method == 'Custom Path':
+    if not 'drive' in globals():
+        drive.mount('/content/drive')
+    PATH_TO_YOUR_VIDEO = '/content/Untitled video - Made with Clipchamp (4).mp4' #@param {type:"string"}
+    if not os.path.isfile(PATH_TO_YOUR_VIDEO):
+        print("ERROR: File not found!")
+        raise SystemExit(0)
+
+if upload_method == "Upload":
+  clear_output()
+  print("Input Video")
+  showVideo(PATH_TO_YOUR_VIDEO)
+else:
+    if os.path.isfile(PATH_TO_YOUR_VIDEO):
+        shutil.copyfile(PATH_TO_YOUR_VIDEO, "/content/sample_data/input_vid.mp4")
+        print("Input Video")
+        showVideo(PATH_TO_YOUR_VIDEO)
+
+# to preview the video
+from IPython.display import HTML
+from base64 import b64encode
+mp4 = open('/content/sample_data/input_vid.mp4','rb').read()
+data_url = "data:video/mp4;base64," + b64encode(mp4).decode()
+HTML(f"""<video width=600 controls><source src="{data_url}"></video>""")
+
+# audio
+#@title Select Audio
+import os
+from IPython.display import Audio
+from IPython.core.display import display
+
+upload_method = 'Upload' #@param ['Upload', 'Custom Path']
+
+#remove previous input audio
+if os.path.isfile('/content/sample_data/input_audio.wav'):
+    os.remove('/content/sample_data/input_audio.wav')
+
+def displayAudio():
+  display(Audio('/content/sample_data/input_audio.wav'))
+
+if upload_method == 'Upload':
+  from google.colab import files
+  uploaded = files.upload()
+  for fn in uploaded.keys():
+    print('User uploaded file "{name}" with length {length} bytes.'.format(
+        name=fn, length=len(uploaded[fn])))
+
+  # Consider only the first file
+  PATH_TO_YOUR_AUDIO = str(list(uploaded.keys())[0])
+
+  # Load audio with specified sampling rate
+  import librosa
+  audio, sr = librosa.load(PATH_TO_YOUR_AUDIO, sr=None)
+
+  # Save audio with specified sampling rate
+  import soundfile as sf
+  sf.write('/content/sample_data/input_audio.wav', audio, sr, format='wav')
+
+  clear_output()
+  displayAudio()
+
+else: # Custom Path
+  from google.colab import drive
+  drive.mount('/content/drive')
+  #@markdown ``Add the full path to your audio on your Gdrive`` 👇
+  PATH_TO_YOUR_AUDIO = '/content/output10_out.wav' #@param {type:"string"}
+
+  # Load audio with specified sampling rate
+  import librosa
+  audio, sr = librosa.load(PATH_TO_YOUR_AUDIO, sr=None)
+
+  # Save audio with specified sampling rate
+  import soundfile as sf
+  sf.write('/content/sample_data/input_audio.wav', audio, sr, format='wav')
+
+  clear_output()
+  displayAudio()
+# using pretrained model to sync audio and video to create a synced file
+!cd Wav2Lip && python inference.py --checkpoint_path checkpoints/wav2lip_gan.pth --face "../sample_data/input_vid.mp4" --audio "../sample_data/input_audio.wav"
+
+#Preview output video
+clear_output()
+print("Final Video Preview")
+print("Download this video from", '/content/Wav2Lip/results/result_voice.mp4')
+showVideo('/content/Wav2Lip/results/result_voice.mp4')
