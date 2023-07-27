@@ -47,6 +47,8 @@ from IPython.display import clear_output
 
 # input video files
 #@title Upload video
+
+
 #video
 
 #importing necessary modules and libraries
@@ -97,7 +99,9 @@ mp4 = open('/content/sample_data/input_vid.mp4','rb').read()
 data_url = "data:video/mp4;base64," + b64encode(mp4).decode()
 HTML(f"""<video width=600 controls><source src="{data_url}"></video>""")
 
+
 # audio
+
 #@title Select Audio
 import os
 from IPython.display import Audio
@@ -136,7 +140,7 @@ if upload_method == 'Upload':
 else: # Custom Path
   from google.colab import drive
   drive.mount('/content/drive')
-  #@markdown ``Add the full path to your audio on your Gdrive`` 👇
+
   PATH_TO_YOUR_AUDIO = '/content/output10_out.wav' #@param {type:"string"}
 
   # Load audio with specified sampling rate
